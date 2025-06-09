@@ -18,12 +18,16 @@
       <thead>
         <tr>
           <th>Name</th>
-          <th>Email</th></tr>
+          <th>Email</th>
+          <th>Signed Up At</th> </tr>
       </thead>
       <tbody>
         <tr v-for="entry in signups" :key="entry.id">
           <td>{{ entry.name }}</td>
           <td>{{ entry.email }}</td>
+          <td>
+            {{ entry.createdAt && entry.createdAt.seconds ? new Date(entry.createdAt.seconds * 1000).toLocaleString() : 'N/A' }}
+          </td>
         </tr>
       </tbody>
     </table>
@@ -37,16 +41,15 @@ export default {
       name: '',
       email: '',
       signups: [],
-      // Ensure this matches where your backend is running
-      // If backend is local: 'http://localhost:3000'
-      // If backend is deployed: 'https://your-render-backend-url.onrender.com' (example)
-      API_BASE: 'http://localhost:3000'
+      // Use environment variable for API_BASE
+      // Vercel/Vite automatically exposes VITE_ prefixed env vars to the browser
+      API_BASE: import.meta.env.VITE_APP_API_BASE || 'http://localhost:3000'
     }
   },
   methods: {
     async submitForm() {
       try {
-        const response = await fetch(`${this.API_BASE}/api/signups`, { // FIXED: Changed '/signup' to '/api/signups'
+        const response = await fetch(`${this.API_BASE}/api/signups`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name: this.name, email: this.email }),
@@ -55,17 +58,15 @@ export default {
         if (!response.ok) {
           const errorData = await response.json();
           console.error('Submission failed:', errorData.error);
-          // Optionally, show a user-friendly error message (e.g., using PrimeVue Toast)
-          // this.$toast.add({severity:'error', summary: 'Error', detail: errorData.error, life: 3000});
+          // Optional: Display user-friendly error toast
         } else {
           const successData = await response.json();
           console.log('Submission successful:', successData.message);
-          // Optionally, show a user-friendly success message (e.g., using PrimeVue Toast)
-          // this.$toast.add({severity:'success', summary: 'Success', detail: successData.message, life: 3000});
+          // Optional: Display user-friendly success toast
         }
       } catch (error) {
         console.error('Network or other error during submission:', error);
-        // this.$toast.add({severity:'error', summary: 'Error', detail: 'Failed to connect to server.', life: 3000});
+        // Optional: Display user-friendly network error toast
       }
 
       this.name = '';
@@ -74,7 +75,7 @@ export default {
     },
     async getSignups() {
       try {
-        const res = await fetch(`${this.API_BASE}/api/signups`); // FIXED: Changed '/signups' to '/api/signups'
+        const res = await fetch(`${this.API_BASE}/api/signups`);
         if (!res.ok) {
           const errorData = await res.json();
           console.error('Failed to fetch signups:', errorData.error);
@@ -95,12 +96,5 @@ export default {
 </script>
 
 <style scoped>
-/* You mentioned using Bootstrap classes like form-control, btn, btn-primary, table, table-bordered.
-   Make sure Bootstrap CSS is correctly imported in your main.js or index.html if you want these styles.
-   If using TailwindCSS, you would replace these with Tailwind classes.
-   Example:
-   .form-control { @apply block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none; }
-   .btn { @apply inline-block px-6 py-2 border-2 border-gray-800 text-gray-800 font-medium text-xs leading-tight uppercase rounded hover:bg-black hover:bg-opacity-5 focus:outline-none focus:ring-0 transition duration-150 ease-in-out; }
-   .btn-primary { @apply bg-blue-600 text-white hover:bg-blue-700; }
-*/
+/* (Your existing styles here) */
 </style>
